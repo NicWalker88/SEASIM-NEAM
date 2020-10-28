@@ -464,8 +464,8 @@ end
 to setup-chl
   ;gis:load-coordinate-system ("F:/PhD/S.scombrus_movement_model/esriwkt.txt") ; See load-chl and load-SST procedure for full details
   ifelse enviro_inputs = "RS"
-  [set phyto-data gis:load-dataset "F:/SEASIM-MAC_2020/inputs/sst_chl/phyto_1.asc"]
-  [set phyto-data gis:load-dataset (word "F:/SEASIM-MAC_2020/inputs/ESM_inputs/GFDL_" RCP "chl_1.asc")]
+  [set phyto-data gis:load-dataset "inputs/sst_chl/phyto_1.asc"]
+  [set phyto-data gis:load-dataset (word "inputs/ESM_inputs/GFDL_" RCP "chl_1.asc")]
   gis:set-world-envelope gis:envelope-of phyto-data
   gis:apply-raster phyto-data X_phyto
 
@@ -502,8 +502,8 @@ end
 
 to setup-SST
   ifelse enviro_inputs = "RS"
-  [set SST-data gis:load-dataset "F:/SEASIM-MAC_2020/inputs/sst_chl/sst_1.asc"]
-  [set SST-data gis:load-dataset (word "F:/SEASIM-MAC_2020/inputs/ESM_inputs/GFDL_" RCP "tos_1.asc")]
+  [set SST-data gis:load-dataset "inputs/sst_chl/sst_1.asc"]
+  [set SST-data gis:load-dataset (word "inputs/ESM_inputs/GFDL_" RCP "tos_1.asc")]
   gis:apply-raster SST-data SST
 end
 
@@ -511,14 +511,14 @@ end
 ;;;; bathymetric data is loaded in ;;;;
 
 to setup-bathymetry
-  set bath-data gis:load-dataset "F:/SEASIM-MAC_2020/inputs/sst_chl/bath.asc"
+  set bath-data gis:load-dataset "inputs/sst_chl/bath.asc"
   gis:apply-raster bath-data depth
 end
 
 ;;;; land masses (Iceland and Ireland) are loaded in using shapefiles ;;;;
 
 to setup-land
-  set land gis:load-dataset "F:/SEASIM-MAC_2020/inputs/na50km_50m_coast_lines.shp"
+  set land gis:load-dataset "inputs/na50km_50m_coast_lines.shp"
   foreach gis:feature-list-of land
   [
     gis:set-drawing-color brown ; land is coloured grey
@@ -549,11 +549,11 @@ end
 ;;;; coordinates of each patch are defined ;;;;
 
 to setup-coords
-  set lon-data gis:load-dataset "F:/SEASIM-MAC_2020/inputs/sst_chl/lon.asc"
+  set lon-data gis:load-dataset "inputs/sst_chl/lon.asc"
   gis:set-world-envelope gis:envelope-of lon-data
   gis:apply-raster lon-data longitude
 
-  set lat-data gis:load-dataset "F:/SEASIM-MAC_2020/inputs/sst_chl/lat.asc"
+  set lat-data gis:load-dataset "inputs/sst_chl/lat.asc"
   gis:set-world-envelope gis:envelope-of lat-data
   gis:apply-raster lat-data latitude
 
@@ -563,11 +563,11 @@ to setup-coords
     set latitude precision latitude 3
   ]
 
-  let north-data gis:load-dataset "F:/SEASIM-MAC_2020/inputs/true_north.asc"
+  let north-data gis:load-dataset "inputs/true_north.asc"
   gis:set-world-envelope gis:envelope-of lat-data
   gis:apply-raster north-data true_north_heading
 
-  let west-data gis:load-dataset "F:/SEASIM-MAC_2020/inputs/true_west2.asc"
+  let west-data gis:load-dataset "inputs/true_west2.asc"
   gis:set-world-envelope gis:envelope-of lat-data
   gis:apply-raster west-data true_west_heading
 end
@@ -701,7 +701,7 @@ end
 ;;;; fishing mortalities-at-age are setup ;;;;
 
 to setup-F
-  file-open (word "F:/SEASIM-MAC_2020/inputs/F/" start_year ".txt")
+  file-open (word "inputs/F/" start_year ".txt")
   set F (list file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read)
   file-close
 end
@@ -717,7 +717,7 @@ end
 
 to setup-turtles
 
-  file-open (word "F:/SEASIM-MAC_2020/inputs/initial_numbers/" start_year ".txt")
+  file-open (word "inputs/initial_numbers/" start_year ".txt")
   let initial_numbers (list file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read)
   file-close
 
@@ -807,7 +807,7 @@ end
 to loop-chl
   if ((ticks - (run-year * (365 / rm))) mod (10 / rm) != 0) and (ticks - (run-year * (365 / rm)) != 73)     ; Every n days (depending on high or low res) a new chl map is loaded. This is not done over winter due to a lack of data
   [
-    set directory "F:/SEASIM-MAC_2020/inputs/sst_chl"                                                         ; location on pc of chl data
+    set directory "inputs/sst_chl"                                                         ; location on pc of chl data
     set raster (word directory "/phyto_" (((((ticks - (run-year * (365 / rm))) + 1) / (10 / rm)))) ".asc")                                  ; appropriate file identified
     set phyto-data gis:load-dataset  raster
     gis:set-world-envelope gis:envelope-of phyto-data                                                                  ; model extent set to that of the data
@@ -823,7 +823,7 @@ end
 to loop-SST                                                                                                            ; SST is loaded in the same way as chl
   if (ticks >= (60 / rm)) and ((ticks - (run-year * (365 / rm))) mod (10 / rm) != 0) and (ticks - (run-year * (365 / rm)) != 73)
   [
-    set directory "F:/SEASIM-MAC_2020/inputs/sst_chl"
+    set directory "inputs/sst_chl"
     set rasterSST (word directory "/sst_" (((((ticks - (run-year * (365 / rm))) + 1) / (10 / rm)))) ".asc")
     set SST-data gis:load-dataset  rasterSST
     gis:apply-raster SST-data SST
@@ -1292,12 +1292,12 @@ to calc_month
 
     set min_lat_always_light 70.5
 
-    set directory "F:/SEASIM-MAC_2020/inputs/photoperiod"
+    set directory "inputs/photoperiod"
     set raster (word directory "/photo__" month ".asc")
     set photo-data gis:load-dataset  raster
     gis:apply-raster photo-data photo_mult
 
-    set directory "F:/SEASIM-MAC_2020/inputs/currents"
+    set directory "inputs/currents"
 
     set raster (word directory "/" month "_u.asc")
     set currents-data gis:load-dataset  raster
@@ -1319,12 +1319,12 @@ to calc_month
 
     set min_lat_always_light 65.9
 
-    set directory "F:/SEASIM-MAC_2020/inputs/photoperiod"
+    set directory "inputs/photoperiod"
     set raster (word directory "/photo__" month ".asc")
     set photo-data gis:load-dataset  raster
     gis:apply-raster photo-data photo_mult
 
-    set directory "F:/SEASIM-MAC_2020/inputs/currents"
+    set directory "inputs/currents"
 
     set raster (word directory "/" month "_u.asc")
     set currents-data gis:load-dataset  raster
@@ -1346,12 +1346,12 @@ to calc_month
 
     set min_lat_always_light 67.5
 
-    set directory "F:/SEASIM-MAC_2020/inputs/photoperiod"
+    set directory "inputs/photoperiod"
     set raster (word directory "/photo__" month ".asc")
     set photo-data gis:load-dataset  raster
     gis:apply-raster photo-data photo_mult
 
-    set directory "F:/SEASIM-MAC_2020/inputs/currents"
+    set directory "inputs/currents"
 
     set raster (word directory "/" month "_u.asc")
     set currents-data gis:load-dataset  raster
@@ -1373,12 +1373,12 @@ to calc_month
 
     set min_lat_always_light 70.5
 
-    set directory "F:/SEASIM-MAC_2020/inputs/photoperiod"
+    set directory "inputs/photoperiod"
     set raster (word directory "/photo__" month ".asc")
     set photo-data gis:load-dataset  raster
     gis:apply-raster photo-data photo_mult
 
-    set directory "F:/SEASIM-MAC_2020/inputs/currents"
+    set directory "inputs/currents"
 
     set raster (word directory "/" month "_u.asc")
     set currents-data gis:load-dataset  raster
@@ -1400,7 +1400,7 @@ to calc_month
 
     set min_lat_always_light 60 ; arbitrarily low as the end of the feeding period is signified and individuals should stop seeking out longest photoperiods
 
-    set directory "F:/SEASIM-MAC_2020/inputs/photoperiod"
+    set directory "inputs/photoperiod"
     set raster (word directory "/photo__" month ".asc")
     set photo-data gis:load-dataset  raster
     gis:apply-raster photo-data photo_mult
@@ -1415,7 +1415,7 @@ to calc_month
         set c_lim sum [(((item (floor age) F) * F_multiplier) / (((item (floor age) F) * F_multiplier) + (M / 12))) * (1 - exp(- (((item (floor age) F) * F_multiplier) + (M / 12)))) * (total-mass * abundance)] of turtles
     set annual_c_lim annual_c_lim + c_lim
 
-    set directory "F:/SEASIM-MAC_2020/inputs/photoperiod"
+    set directory "inputs/photoperiod"
     set raster (word directory "/photo__" month ".asc")
     set photo-data gis:load-dataset  raster
     gis:apply-raster photo-data photo_mult
@@ -1457,21 +1457,21 @@ to load-F
 
     if (future_annual_F = "F_MSY") or (future_annual_F = 2)
     [
-      file-open (word "F:/PhD/mac_model_v3/inputs/F/FMSY.txt")
+      file-open (word "/inputs/F/FMSY.txt")
       set F (list file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read) ; there is a file for each year's F-at-age in the directory. it is read in here
       file-close
     ]
 
     if (future_annual_F = "F_lim") or (future_annual_F = 3)
     [
-      file-open (word "F:/SEASIM-MAC_2020/inputs/F/Flim.txt")
+      file-open (word "inputs/F/Flim.txt")
       set F (list file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read) ; there is a file for each year's F-at-age in the directory. it is read in here
       file-close
     ]
   ]
   [
     print "F successfully loaded"
-    file-open (word "F:/SEASIM-MAC_2020/inputs/F/" (run-year + start_year) ".txt")
+    file-open (word "inputs/F/" (run-year + start_year) ".txt")
     set F (list file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read file-read) ; there is a file for each year's F-at-age in the directory. it is read in here
     file-close
   ]
@@ -1485,7 +1485,7 @@ end
 to load-chl
   if ((ticks - (run-year * (365 / rm))) mod (10 / rm) != 0)   ; Every tenth day the appropriate chl map is loaded in.
   [
-    set directory "F:/SEASIM-MAC_2020/inputs/sst_chl"                                                           ; location on pc of chl data
+    set directory "inputs/sst_chl"                                                           ; location on pc of chl data
     set raster (word directory "/phyto_" (((((ticks - (run-year * (365 / rm))) + 1) / (10 / rm)) + ((run-year - 10) * 36)) + 36) ".asc")           ; appropriate file identified
     set phyto-data gis:load-dataset  raster
     gis:apply-raster phyto-data X_phyto                                                                            ; patches are given values for phytoplankton biomass from the phyto-data
@@ -1500,7 +1500,7 @@ end
 to load-SST   ; SST is loaded in the same way as chl
   if (ticks >= (round(60 / rm))) and ((ticks - (run-year * (round(365 / rm)))) mod (10 / rm) != 0) and (ticks - (run-year * (365 / rm)) != 73)
   [
-    set directory "F:/SEASIM-MAC_2020/inputs/sst_chl"
+    set directory "inputs/sst_chl"
     set rasterSST (word directory "/sst_" (((((ticks - (run-year * (365 / rm))) + 1) / (10 / rm)) + ((run-year - 10) * 36)) + 36) ".asc")
     set SST-data gis:load-dataset  rasterSST
     gis:apply-raster SST-data SST
@@ -1515,7 +1515,7 @@ to load-ESM-inputs
   or (ticks mod (365 / rm) = round(182 / rm)) or (ticks mod (365 / rm) = round(213 / rm)) or (ticks mod (365 / rm) = round(244 / rm)) or (ticks mod (365 / rm) = round(274 / rm)) or (ticks mod (365 / rm) = round(305 / rm)) or (ticks mod (365 / rm) = round(335 / rm))
   [
     set month_n month_n + 1
-    set directory "F:/SEASIM-MAC_2020/inputs/ESM_inputs"
+    set directory "inputs/ESM_inputs"
 
     ifelse (actual_year > 2005) and (actual_year < 2019)
     [set raster (word directory "/rcp_mean_chl_" (month_n - 300) ".asc")]
@@ -2553,16 +2553,16 @@ to calc_summer_distribution_stats
     let plank-output gis:patch-dataset x_phyto
     let prof-output gis:patch-dataset profitability
 
-    ;gis:store-dataset dens-output (word "F:/SEASIM-MAC_2020/outputs/summer_distribution/" future_annual_F "_" RCP "_" sim_n "_" dens-index ".asc")
-    gis:store-dataset sst-output ( word "F:/SEASIM-MAC_2020/outputs/summer_distribution/sst_" RCP "_" dens-index ".asc" )
-    gis:store-dataset plank-output ( word "F:/SEASIM-MAC_2020/outputs/summer_distribution/plank_" RCP "_" dens-index ".asc" )
-    gis:store-dataset prof-output ( word "F:/SEASIM-MAC_2020/outputs/summer_distribution/prof_" RCP "_" dens-index ".asc" )
+    ;gis:store-dataset dens-output (word "outputs/summer_distribution/" future_annual_F "_" RCP "_" sim_n "_" dens-index ".asc")
+    gis:store-dataset sst-output ( word "outputs/summer_distribution/sst_" RCP "_" dens-index ".asc" )
+    gis:store-dataset plank-output ( word "outputs/summer_distribution/plank_" RCP "_" dens-index ".asc" )
+    gis:store-dataset prof-output ( word "outputs/summer_distribution/prof_" RCP "_" dens-index ".asc" )
 
-    ;gis:store-dataset dens-output ( word "F:/PhD/mac_model_v3/outputs/Scenarios/summer_dist/" future_annual_F RCP "_" dens-index ".asc" )
+    ;gis:store-dataset dens-output ( word "/outputs/Scenarios/summer_dist/" future_annual_F RCP "_" dens-index ".asc" )
 
     ;set L-index L-index + 1
     ;let L-output gis:patch-dataset X_phyto
-    ;gis:store-dataset L-output ( word "F:/PhD/mac_model_v3/outputs/Scenarios/summer_dist/plank_" RCP "_" L-index ".asc" )
+    ;gis:store-dataset L-output ( word "/outputs/Scenarios/summer_dist/plank_" RCP "_" L-index ".asc" )
 
     ;set p-index p-index + 1
     ;let presence-output gis:patch-dataset presence
@@ -2572,7 +2572,7 @@ to calc_summer_distribution_stats
   ;if (ticks - (run-year * (round(365 / rm))) = (275 / 5)) and (run-year >= 10)
   ;[
   ;  let catch-output gis:patch-dataset catch
-  ;  gis:store-dataset catch-output ( word "F:/PhD/mac_model_v3/outputs/Catch/catch/catch_" actual_year ".asc" )
+  ;  gis:store-dataset catch-output ( word "/outputs/Catch/catch/catch_" actual_year ".asc" )
   ;]
 
 end
@@ -3133,7 +3133,7 @@ c
 c
 0
 1e-8
-9.7E-12
+9.78E-12
 1e-14
 1
 NIL
@@ -3319,7 +3319,7 @@ CHOOSER
 start_year
 start_year
 2004 1981 1991 2001 2002 1992 1995 2005 1990 1986
-6
+7
 
 CHOOSER
 229
