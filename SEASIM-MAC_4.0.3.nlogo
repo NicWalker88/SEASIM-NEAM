@@ -735,7 +735,7 @@ set z 0
       ]
       [
         set breed adults
-        set size 2
+        set size 1.5
       ]
 
       set L 42.4 * (1 - exp (- 0.314 * age))
@@ -866,7 +866,7 @@ to go
 
 ;;;; SSt on the spawning grounds is recorded over the months March, April and May. The mean of these SST recordings is used as input the the stock-recruitment relationship
 
-  if (ann_step >= (60 / rm)) and (ann_step < (120 / rm))
+  if (ann_step >= (60 / rm)) and (ann_step <= (120 / rm))
   [calc-spawning-SST]
 
   calc-run-year   ; the current run year is calculated and used for other procedures
@@ -882,19 +882,19 @@ to go
 
 ;;;; If in the spin-up, recruits enter the model at the end of each year. After the spin-up this procedure is not called because adults spawn eggs and recruitment emerges
 
-  if (((ticks < (3650 / rm)) and (force_spin_up_rec = true)) or (Recruitment = "Ricker")) and (ticks - (run-year * (365 / rm)) = (360 / rm))
+  if (((ticks <= (3650 / rm)) and (force_spin_up_rec = true)) or (Recruitment = "Ricker")) and (ticks - (run-year * (365 / rm)) = (365 / rm))
   [input-recruits]
 
 ;;;; Migration departure dates are then calculated ;;;;
 
-  if (ticks - (run-year * (round(365 / rm))) = 2) or (ticks = 0)   ; at the start of each year the time-step on which migrations are triggered is calculated
+  if (ticks - (run-year * (round(365 / rm))) = 1)   ; at the start of each year the time-step on which migrations are triggered is calculated
   [
    calc-migration-ticks
   ]
 
 ;;;; On the first day of each year annual population metrics are reset ;;;;
 
-  if (ticks mod (365 / rm) = 0) or (ticks = 0)
+  if (ticks mod (365 / rm) = 1)
   [
     set num-recruits 0
     set num-matured 0
@@ -1230,9 +1230,9 @@ to profile
 end
 
 to calc-run-year                                    ; run year is used to determine on what time-step annual processes should happen
-  if ticks mod (365 / rm) = 0
+  if ticks mod (365 / rm) = 1
   [
-    set run-year ticks / (365 / rm)
+    set run-year round (ticks / (365 / rm))
     set actual_year start_year + run-year
   ]
 
@@ -1241,7 +1241,7 @@ end
 ;;;; F varies within each year so we calculate simulation month below and can then use this to distribute F properly ;;;;
 
 to calc_month
-  if ticks mod (365 / rm) = 0
+  if ticks mod (365 / rm) = 1
   [
     set month 1
     set month_days 31
@@ -1251,7 +1251,7 @@ to calc_month
     set annual_c_lim annual_c_lim + c_lim
   ]
 
-  if (ticks - (run-year * (365 / rm))) = round(32 / rm)
+  if (ticks - (run-year * (365 / rm))) = ceiling(32 / rm)
   [
     set month 2
     set month_days 28
@@ -1261,17 +1261,17 @@ to calc_month
     set annual_c_lim annual_c_lim + c_lim
   ]
 
-  if (ticks - (run-year * (365 / rm))) = round(60 / rm)
+  if (ticks - (run-year * (365 / rm))) = ceiling(60 / rm)
   [
     set month 3
-    set month_days 30
+    set month_days 31
     set F_multiplier 0.14
     set prop_catch_4a 0.0014
         set c_lim sum [(((item (floor age) F) * F_multiplier) / (((item (floor age) F) * F_multiplier) + (M / 12))) * (1 - exp(- (((item (floor age) F) * F_multiplier) + (M / 12)))) * (total-mass * abundance)] of turtles
     set annual_c_lim annual_c_lim + c_lim
   ]
 
-  if (ticks - (run-year * (365 / rm))) = round(91 / rm)
+  if (ticks - (run-year * (365 / rm))) = ceiling(91 / rm)
   [
     set month 4
     set month_days 30
@@ -1281,7 +1281,7 @@ to calc_month
     set annual_c_lim annual_c_lim + c_lim
   ]
 
-  if (ticks - (run-year * (365 / rm))) = round(121 / rm)
+  if (ticks - (run-year * (365 / rm))) = ceiling(121 / rm)
   [
     set month 5
     set month_days 31
@@ -1308,7 +1308,7 @@ to calc_month
     gis:apply-raster currents-data v
   ]
 
-  if (ticks - (run-year * (365 / rm))) = round(152 / rm)
+  if (ticks - (run-year * (365 / rm))) = ceiling(152 / rm)
   [
     set month 6
     set month_days 30
@@ -1335,7 +1335,7 @@ to calc_month
     gis:apply-raster currents-data v
   ]
 
-  if (ticks - (run-year * (365 / rm))) = round(182 / rm)
+  if (ticks - (run-year * (365 / rm))) = ceiling(182 / rm)
   [
     set month 7
     set month_days 31
@@ -1362,7 +1362,7 @@ to calc_month
     gis:apply-raster currents-data v
   ]
 
-  if (ticks - (run-year * (365 / rm))) = round(213 / rm)
+  if (ticks - (run-year * (365 / rm))) = ceiling(213 / rm)
   [
     set month 8
     set month_days 31
@@ -1389,7 +1389,7 @@ to calc_month
     gis:apply-raster currents-data v
   ]
 
-  if (ticks - (run-year * (365 / rm))) = round(244 / rm)
+  if (ticks - (run-year * (365 / rm))) = ceiling(244 / rm)
   [
     set month 9
     set month_days 30
@@ -1406,7 +1406,7 @@ to calc_month
     gis:apply-raster photo-data photo_mult
   ]
 
-  if (ticks - (run-year * (365 / rm))) = round(274 / rm)
+  if (ticks - (run-year * (365 / rm))) = ceiling(274 / rm)
   [
     set month 10
     set month_days 31
@@ -1421,7 +1421,7 @@ to calc_month
     gis:apply-raster photo-data photo_mult
   ]
 
-  if (ticks - (run-year * (365 / rm))) = round(305 / rm)
+  if (ticks - (run-year * (365 / rm))) = ceiling(305 / rm)
   [
     set month 11
     set month_days 30
@@ -1431,7 +1431,7 @@ to calc_month
     set annual_c_lim annual_c_lim + c_lim
   ]
 
-  if (ticks - (run-year * (365 / rm))) = round(335 / rm)
+  if (ticks - (run-year * (365 / rm))) = ceiling(335 / rm)
   [
     set month 12
     set month_days 31
@@ -1749,11 +1749,11 @@ to transform
 
   ask juveniles
   [
-    if ((ticks > (3650 / rm)) and (L >= Lm) and (ticks = (report-tick-pre-spawn-mig - 1))) or ((ticks < round(3650 / rm)) and (age < 3) and (age > 2) and (ticks = (report-tick-pre-spawn-mig - 1)))   ; juveniles can only mature on Feb 1st, and if they meet size and condition thresholds
+    if ((ticks > (3650 / rm)) and (L >= Lm) and (ticks = report-tick-pre-spawn-mig)) or ((ticks < round(3650 / rm)) and (age < 3) and (age > 2) and (ticks = report-tick-pre-spawn-mig))   ; juveniles can only mature on Feb 1st, and if they meet size and condition thresholds
     [
       set breed adults
       set color grey
-      ;set size 2
+      set size 1.5
       set shape "fish"
       set migrating false
       set Amat age
@@ -1776,11 +1776,11 @@ end
 ;;;; "report-tick" procedure simply calculates the time-step on which migrations should begin in the current year ;;;;
 
 to calc-migration-ticks
-  set report-tick-pre-spawn-mig (run-year * (365 / rm)) + round(31 / rm)
-  set report-tick-post-spawn-mig (run-year * (365 / rm)) + round(122 / rm)
-  set report-tick-pre-overwinter-mig (run-year * (365 / rm)) + round(274 / rm)
-  set start-spawn (run-year * (365 / rm)) + round(61 / rm)
-  set end-spawn (run-year * (365 / rm)) + round(212 / rm)
+  set report-tick-pre-spawn-mig (run-year * (365 / rm)) + ceiling(32 / rm)
+  set report-tick-post-spawn-mig (run-year * (365 / rm)) + ceiling(121 / rm)
+  set report-tick-pre-overwinter-mig (run-year * (365 / rm)) + ceiling(274 / rm)
+  set start-spawn (run-year * (365 / rm)) + ceiling(60 / rm)
+  set end-spawn (run-year * (365 / rm)) + ceiling(120 / rm) ; CHECK
 end
 
 ;;;; spawning migration ;;;;
@@ -1788,7 +1788,7 @@ end
 to spawn-migrate                                                                           ; Spawning migration from overwintering to southern part of the spawning grounds
   if breed = adults
   [
-    if ticks < round(31 / rm)
+    if ticks <= ceiling(31 / rm)
       [set migrating false]                                                                    ; this must be set to avoid syntax errors at the start of a simulation
 
     ifelse (ticks > start-spawn) and (SArea = true)
@@ -1901,7 +1901,7 @@ to drift                                                                        
     [
       set migrating true
       face one-of patches with [(NArea = true) and (X_phyto >= 0) and (SST >= 0)]
-      fd 0.5 / rm
+      fd 0.5 * rm
       ifelse (X_phyto >= 0) and (sst >= 0)
       []
       [move-to min-one-of patches with [(sst >= 0) and (X_phyto >= 0)] [distance myself]]
@@ -3220,7 +3220,7 @@ CHOOSER
 Recruitment
 Recruitment
 "Emergent" "Ricker"
-0
+1
 
 CHOOSER
 12
@@ -3319,7 +3319,7 @@ CHOOSER
 start_year
 start_year
 2004 1981 1991 2001 2002 1992 1995 2005 1990 1986
-7
+6
 
 CHOOSER
 229
