@@ -821,7 +821,7 @@ to loop-chl
 end
 
 to loop-SST                                                                                                            ; SST is loaded in the same way as chl
-  if (ticks >= (60 / rm)) and ((ticks - (run-year * (365 / rm))) mod (10 / rm) != 0) and (ticks - (run-year * (365 / rm)) != 73)
+  if ((ticks - (run-year * (365 / rm))) mod (10 / rm) != 0) and (ticks - (run-year * (365 / rm)) != 73)
   [
     set directory "inputs/sst_chl"
     set rasterSST (word directory "/sst_" (((((ticks - (run-year * (365 / rm))) + 1) / (10 / rm)))) ".asc")
@@ -839,12 +839,39 @@ end
 
 to go
   tick
-  set ann_step ann_step + 1
 
   ; stop the simulation if using remote-sensing inputs and it is 2019
 
   if (enviro_inputs = "RS") and (ticks = 1752)
   [stop]
+
+  ;;;; On the first day of each year annual population metrics are reset ;;;;
+
+  if (ticks mod (365 / rm) = 1)
+  [
+    set num-recruits 0
+    set num-matured 0
+    set egg-production 0
+    set num-eaten 0
+    set larval-production 0
+    set R_energy 0
+    set ann_step 0
+    set annual_c_lim 0
+    set catch 0
+    set spawning_SST []  ; start an empty list for spawning SST each year. This will be population with mean SST on spawning grounds each time-step over MArch, April and May, then averaged for use in the RIcker model
+    ask patches
+    [
+      set feed-range false
+      set presence 0
+    ]
+    ask turtles
+    [
+      set better_patch false
+    ]
+  ]
+
+  set ann_step ann_step + 1
+  calc-run-year   ; the current run year is calculated and used for other procedures
 
 ;;;; SST and phytoplankton are loaded in first ;;;;
 
@@ -869,20 +896,20 @@ to go
   if (ann_step >= (60 / rm)) and (ann_step <= (120 / rm))
   [calc-spawning-SST]
 
-  calc-run-year   ; the current run year is calculated and used for other procedures
+
+  ;;;; Fishing mortality is loaded on the first day of each year ;;;;
+
+  if ticks - (run-year * (365 / rm)) = 1 and (((constant_rec? = true) and (run-year >= 10)) or ((constant_rec? = false))) ; new fishing mortality is only loaded if we're greater than 10 years in, i.e. the spin up is finished
+  [load-F]
 
   calc_month
 
   time:go   ; this aligns NetLogo "ticks" with real dates that are shown on the interface
-
-;;;; Fishing mortality is loaded on the first day of each year ;;;;
-
-  if ticks - (run-year * (365 / rm)) = 1 and (((constant_rec? = true) and (run-year >= 10)) or ((constant_rec? = false))) ; new fishing mortality is only loaded if we're greater than 10 years in, i.e. the spin up is finished
-  [load-F]                                                              ; fishing mortality data is loaded in
+                                                              ; fishing mortality data is loaded in
 
 ;;;; If in the spin-up, recruits enter the model at the end of each year. After the spin-up this procedure is not called because adults spawn eggs and recruitment emerges
 
-  if (((ticks <= (3650 / rm)) and (force_spin_up_rec = true)) or (Recruitment = "Ricker")) and (ticks - (run-year * (365 / rm)) = (365 / rm))
+  if (((ticks <= (3650 / rm)) and (force_spin_up_rec = true)) or (Recruitment = "Ricker")) and (ticks - (run-year * (365 / rm)) = (360 / rm))
   [input-recruits]
 
 ;;;; Migration departure dates are then calculated ;;;;
@@ -892,30 +919,6 @@ to go
    calc-migration-ticks
   ]
 
-;;;; On the first day of each year annual population metrics are reset ;;;;
-
-  if (ticks mod (365 / rm) = 1)
-  [
-    set num-recruits 0
-    set num-matured 0
-    set egg-production 0
-    set num-eaten 0
-    set larval-production 0
-    set R_energy 0
-    set ann_step 0
-    set annual_c_lim 0
-    set catch 0
-    set spawning_SST []  ; start an empty list for spawning SST each year. This will be population with mean SST on spawning grounds each time-step over MArch, April and May, then averaged for use in the RIcker model
-    ask patches
-    [
-      set feed-range false
-      set presence 0
-    ]
-    ask turtles
-    [
-      set better_patch false
-    ]
-  ]
 
 ;;;; individuals then perform their daily routine ;;;
 
@@ -1483,7 +1486,7 @@ end
 
 
 to load-chl
-  if ((ticks - (run-year * (365 / rm))) mod (10 / rm) != 0)   ; Every tenth day the appropriate chl map is loaded in.
+  if ((ticks - (run-year * (365 / rm))) mod (10 / rm) != 0) and (ticks - (run-year * (365 / rm)) != 73)  ; Every tenth day the appropriate chl map is loaded in.
   [
     set directory "inputs/sst_chl"                                                           ; location on pc of chl data
     set raster (word directory "/phyto_" (((((ticks - (run-year * (365 / rm))) + 1) / (10 / rm)) + ((run-year - 10) * 36)) + 36) ".asc")           ; appropriate file identified
@@ -1498,7 +1501,7 @@ to load-chl
 end
 
 to load-SST   ; SST is loaded in the same way as chl
-  if (ticks >= (round(60 / rm))) and ((ticks - (run-year * (round(365 / rm)))) mod (10 / rm) != 0) and (ticks - (run-year * (365 / rm)) != 73)
+  if ((ticks - (run-year * (round(365 / rm)))) mod (10 / rm) != 0) and (ticks - (run-year * (365 / rm)) != 73)
   [
     set directory "inputs/sst_chl"
     set rasterSST (word directory "/sst_" (((((ticks - (run-year * (365 / rm))) + 1) / (10 / rm)) + ((run-year - 10) * 36)) + 36) ".asc")
@@ -1829,11 +1832,11 @@ to feed-migrate                                                                 
     ifelse (batches >= n_batch) ; migrate after all batches of eggs have been spawned
     [
       if ticks = report-tick-post-spawn-mig  ; set a random number between one and 5 indicating the distance from the target destination patch at which the migration will end and feeding movement will begin. This is just to prevent all individuals congregating on same destination patch
-      [set launch_pad_R random 5]
+      [set launch_pad_R random 5 + 1]
 
       if (ticks >= report-tick-post-spawn-mig) and (ticks <= report-tick-post-spawn-mig + round(150 / rm))
       [
-        ifelse ((Feed-dist > launch_pad_R) and  (feeding != true)) and (ann_step < 35)                                        ; migrate until the randomly-selected distance from the feeding destination, at which point the migration ends
+        ifelse ((Feed-dist > launch_pad_R) and  (feeding != true)) and (ann_step < 36)                                        ; migrate until the randomly-selected distance from the feeding destination, at which point the migration ends
         [
           set migrating true
 
@@ -3193,7 +3196,7 @@ true
 true
 "" ""
 PENS
-"0" 1.0 0 -16777216 true "" "if any? turtles with [age < 1] [plot mean [total-mass] of turtles with [age < 1]]"
+"0" 1.0 0 -16777216 true "" "ifelse any? turtles with [age < 1] [plot mean [total-mass] of turtles with [age < 1]][plot 0]"
 "1" 1.0 0 -7500403 true "" "if any? turtles with [(age < 2) and (age > 1)] [plot mean [total-mass] of turtles with [(age > 1) and (age < 2)]]"
 "2" 1.0 0 -2674135 true "" "if any? turtles with [(age < 3) and (age > 2)] [plot mean [total-mass] of turtles with [(age > 2) and (age < 3)]]"
 "3" 1.0 0 -955883 true "" "if any? turtles with [(age < 4) and (age > 3)] [plot mean [total-mass] of turtles with [(age > 3) and (age < 4)]]"
@@ -3220,7 +3223,7 @@ CHOOSER
 Recruitment
 Recruitment
 "Emergent" "Ricker"
-1
+0
 
 CHOOSER
 12
